@@ -101,6 +101,7 @@ class Visit extends \Loris\API\Candidates\Candidate
 
         $this->JSON = [
                        "Meta" => [
+                                  "ID"      => $this->Timepoint->getData("SessionID"),
                                   "CandID"  => $this->CandID,
                                   'Visit'   => $this->VisitLabel,
                                   'Site'    => $centerName,
