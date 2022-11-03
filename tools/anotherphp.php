@@ -13,6 +13,9 @@ $cbigCred    = [
 ];
 
 
+
+
+
 // need to login to api next (not here yet)
 
 
@@ -37,6 +40,9 @@ $cbigHeaders = [
     'Authorization' => "Bearer $cbigToken"
 ];
 
+
+$cbig_shortened_url = str_replace('/api/v0.0.3-dev', '', $cbigBaseURL);
+/*  all 3 grabs!!!
 // Grab CBIG candidates
 $cbigCandidates = getCandidates(
     $cbigClient,
@@ -44,8 +50,10 @@ $cbigCandidates = getCandidates(
     "$cbigBaseURL/candidates/ext",
     $cbigHeaders
 );
+
+
 // Grab CBIG specimens
-$cbig_shortened_url = str_replace('/api/v0.0.3-dev', '', $cbigBaseURL);
+
 $cbigSpecimens      = handleGET(
     $cbigClient,
     "$cbig_shortened_url/biobank/specimenendpoint/",
@@ -63,7 +71,7 @@ $cbigOptions = handleGET(
     $cbigClient,
     "$cbig_shortened_url/biobank/optionsendpoint/",
     $cbigHeaders
-);
+);*/
 
 /*
 $count = 0;
@@ -117,7 +125,7 @@ foreach ($cbigSpecimens as $cbigSpecimen) {
 //    $count3 = $count3 + 1;
 //}
 
-printf(sizeof($cbigContainers));
+//printf(sizeof($cbigContainers));
 
 
 
@@ -125,12 +133,48 @@ printf(sizeof($cbigContainers));
 $firstTryCand = [];
 $firstTryCand['Project'] = 'QPN' ;
 //$firstTryCand['CandID'] = '1433302';
-$firstTryCand['PSCID'] = 'TOSI9870005';
+$firstTryCand['PSCID'] = 'TOSI9891005';
 //$firstTryCand['EDC'] = '';
-$firstTryCand['DoB'] = '1986-03-05';
+$firstTryCand['DoB'] = '1942-09-23';
 $firstTryCand['Sex'] = 'Male';
 $firstTryCand['Site'] = 'CRU-MNI';
-//
+$firstTryCand['CandidateParameters'] = array (
+    'DiagnosisParameters' => array(
+        'DiagnosisID' => '1',
+        'Comment'     => 'Big Comment!'
+    ),
+    'ParticipantStatus' => array (
+        'participant_status'     => '11',
+        'participant_suboptions' => null,
+        'reason_specify'         => null,
+        'CandID'                 => '',
+        'entry_staff'            => 'admin',
+    )
+
+    ,
+    'ConsentParameters' => array(
+        'ConsentStatus' => array (
+            'CandidateID'   => '',
+            'ConsentID'     => '1',
+            'Status'        => 'yes',
+            'DateGiven'     => '2019-11-23',
+            'DateWithdrawn' => null
+        ),
+
+       'ConsentHistory' => array (
+            'PSCID'         => '',
+            'ConsentName'   => 'IRB',
+            'ConsentLabel'  => 'Re-consented for latest version',
+            'Status'        => 'yes',
+            'DateGiven'     => '2019-11-23',
+            'DateWithdrawn' => null,
+            'EntryStaff'    => 'admin'
+        )
+    )
+
+);
+
+/*TODO Sucesses:       TOSI9890005,  */
 
 //$firstTryCand['ExtStudyID'] = '87fbwq9ef8ygwb';
 /*$firstTryCand['SessionIDs'] = Array (
@@ -140,25 +184,44 @@ $firstTryCand['Site'] = 'CRU-MNI';
 
 $candObj1 = [];
 $candObj1['Candidate'] = $firstTryCand;
-$cand1 = json_encode($candObj1);
+//$cand1 = json_encode($candObj1);
 
 // Try posting candidate
-/*
+
 
 
 //$response = new \LORIS\Http\Response();
+
+
 $response = $cbigClient->post(
     "$cbigBaseURL/candidates/", [
         'headers' => $cbigHeaders,
         'json'    => $candObj1
     ]
 );
+echo('Candidate posted! \n');
 
-*/
+die();
+
+$cbigCandidates = getCandidates(
+    $cbigClient,
+    //"$cbigBaseURL/candidates/ext/",
+    "$cbigBaseURL/candidates/",
+    $cbigHeaders
+);
+
+//$cbigCandidatesDecoded = json_decode($cbigCandidates);
+
+$newCandID = findCandIDByPSCID($cbigCandidates, $firstTryCand['PSCID']);
+print_r($newCandID);
+
+
+
 
 //Try making timepoint for our dummy candidate
-$candIDTimep = '113866';
-$visitLabT = 'Biospecimen03';
+//$candIDTimep = '113866';
+$candIDTimep = $newCandID;
+$visitLabT = 'Biospecimen01';
 $siteNameT = 'Montreal Neurological Institute (QPN)';
 $candidateSubprojectT = 'Disease';
 //$CBIG_Client already exists
@@ -168,16 +231,16 @@ $candidateSubprojectT = 'Disease';
 
 //Creat timepoint w/ above info!!
 
-//$success = createTimePoint(
-//    $candIDTimep,
-//    $visitLabT,
-//    $siteNameT,
-//    $candidateSubprojectT,
-//    $cbigClient,
-//    $cbigBaseURL,
-//    $cbigHeaders
-//);
-
+$success = createTimePoint(
+    $candIDTimep,
+    $visitLabT,
+    $siteNameT,
+    $candidateSubprojectT,
+    $cbigClient,
+    $cbigBaseURL,
+    $cbigHeaders
+);
+echo('Timepoint Created!!');
 
 $new_visit = handleGET(
     $cbigClient,
@@ -185,13 +248,19 @@ $new_visit = handleGET(
     $cbigHeaders
 );
 
+print_r($new_visit);
+//prints label
+print_r($new_visit['Meta']['ID']);
+
  //* Container Stuff!
 //echo ($success);
 // projectIds could be a problem!!
 
 $dummyContainer = array (
     //'id' => '43723',
-    'barcode' => 'todayBarcode1010',
+    'barcode' => 'newDayBarcode86722!',
+//    'barcode' => 'todayBarcode1010again!!!',
+
     //'specimenId' => '10000112',
     'typeId' => '16',
     'dimensionId' => '',
@@ -214,7 +283,7 @@ $dummyContainer = array (
     'comments' => ''
 );
 
-print_r($dummyContainer);
+//print_r($dummyContainer);
 
 
 json_encode($dummyContainer);
@@ -236,23 +305,20 @@ json_encode($dummyContainer);
     die();
 }*/
 
-
-echo('did we get here????');
-
-
  //original dummy!!
 $dummySpecimen = array (
    // 'id' => '10000112' ,
    //'containerId' => '43723',
+    //'PSCID' =>  'TOSI9870005'  ,
     'container'   => $dummyContainer,
     'typeId' => '4',
     'quantity' => '1000.000' ,
     'unitId' => '1' ,
     'fTCycle' => '0'  ,
     'parentSpecimenIds' => [] ,
-    //'candidateId' => '113866'  ,
+    'candidateId' => $newCandID  ,
     //'candidateAge' => '36'  ,
-    'sessionId' => '2' ,
+    'sessionId' => $new_visit['Meta']['ID'] ,
     'poolId' => '' ,
     'collection' => Array
         (
@@ -275,44 +341,14 @@ $dummySpecimen = array (
 );
 
 
-// Dummy 2
-//$dummySpecimen = array (
-//    // 'id' => '10000112' ,
-//    //'containerId' => '43723',
-//    'container'   => $dummyContainer,
-//    'typeId' => '4',
-//    'quantity' => '1000.000' ,
-//    'unitId' => '1' ,
-//    'fTCycle' => '0'  ,
-//    'parentSpecimenIds' => [] ,
-//    'candidateId' => '113866'  ,
-//    'candidateAge' => '36'  ,
-//    'sessionId' => '2' ,
-//    'poolId' => ''
-////    'collection' => Array
-////    (
-////        'protocolId' => '21' ,
-////        'centerId' => '10' ,
-////        'examinerId' => '1' ,
-////        'date' => '2019-11-02' ,
-////        'time' => '00:00' ,
-////        'comments' => '',
-////        'data' => [],
-////            /*Array
-////        (
-////            '17' => '0' ,
-////            '57' => '2019-11-02'
-////        ),*/
-////
-////
-////        'quantity' => '1000.000' ,
-////        'unitId' => '1'
-////    )
-//
-//);
+/*TODO
 
+- clean up the 100000 36 y/o guys I made ????
+- nudge on cand paremeters endpoint!!! (make it myself??)
+- nudge on internal data !!
+-*/
 
-print(getType($dummySpecimen));
+//print(getType($dummySpecimen));
 $dummySpec1 = [];
 $dummySpec1['Specimen'] = $dummySpecimen;
 json_encode($dummySpecimen);
@@ -324,6 +360,7 @@ $responseSpec = $cbigClient->post(
     ]
 );
 
+echo('Specimen inserted!');
 echo($responseSpec->getStatusCode());
 
 if ($responseSpec->getStatusCode() != 200) {
@@ -345,7 +382,19 @@ foreach ($cbigOptions as $cbigOption) {
 //
 
 
+function findCandIDByPSCID(
+    array             $candidates,
+    string            $PSCID
+) : string {
+    foreach ($candidates as $candidate){
 
+        if($candidate['PSCID'] == $PSCID){
+            return $candidate['CandID'];
+        }
+
+    }
+    return 'sorry didnt find :(';
+}
 
 
 function createTimePoint(
