@@ -165,6 +165,38 @@ class Candidates extends APIBase
                     $data['Candidate']['Sex'],
                     $data['Candidate']['PSCID']
                 );
+
+                // Diagnosis Fields!!
+                if(isset($data['Candidate']['CandidateParameters']['DiagnosisParameters'])){
+                    $diagnosisParameters = $data['Candidate']['CandidateParameters']['DiagnosisParameters'];
+                    \candidate::singleton($candid)->addDiagnosisFields($diagnosisParameters['DiagnosisID'], $diagnosisParameters['Comment'], $candid);
+
+                } else{
+                    error_log('Candidate Parameters not set!');
+                }
+
+
+                //Participant Status!
+                if(isset($data['Candidate']['CandidateParameters']['ParticipantStatus'])){
+                    $statusParameters = $data['Candidate']['CandidateParameters']['ParticipantStatus'];
+                    \candidate::singleton($candid)->addParticipantStatus($candid, $statusParameters);
+
+                } else{
+                    error_log('Status Parameters not set!');
+                }
+
+                //Consent!
+                if(isset($data['Candidate']['CandidateParameters']['ConsentParameters'])){
+                    $consentParameters = $data['Candidate']['CandidateParameters']['ConsentParameters'];
+                    $consentPSCID =  \candidate::singleton($candid)->getPSCID();
+                    \candidate::singleton($candid)->editConsentStatusFields($consentParameters, $candid, $consentPSCID);
+
+                } else{
+                    error_log('Consent Parameters not set!');
+                }
+
+
+
             } catch(\LorisException $e) {
                 $this->header("HTTP/1.1 400 Bad Request");
                 $this->safeExit(0);
