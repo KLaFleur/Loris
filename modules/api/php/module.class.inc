@@ -99,6 +99,7 @@ class Module extends \Module
 
         $handlername = $pathparts[0];
 
+
         switch ($handlername) {
         case 'candidates':
             $handler = new \LORIS\api\Endpoints\Candidates();
@@ -109,6 +110,15 @@ class Module extends \Module
         case 'projects':
             $handler = new \LORIS\api\Endpoints\Projects();
             break;
+
+        case 'medhubConsent':
+            $handler = new \LORIS\api\Endpoints\MedhubConsent();
+            break;
+
+        case 'medhubTokenValidator':
+                $handler = new \LORIS\api\Endpoints\MedhubTokenValidator();
+                break;
+
         default:
             return new \LORIS\Http\Response\JSON\NotFound();
         }
